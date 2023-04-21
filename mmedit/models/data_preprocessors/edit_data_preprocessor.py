@@ -722,7 +722,7 @@ class EditDataPreprocessor(ImgDataPreprocessor):
                 target_shape = self.output_view
             mean = self.mean.view(target_shape)
             std = self.std.view(target_shape)
-            batch_tensor = batch_tensor * std + mean
+            batch_tensor = batch_tensor.cuda() * std + mean
 
         # convert output to 'BGR' if able
         batch_tensor, _ = self._do_conversion(

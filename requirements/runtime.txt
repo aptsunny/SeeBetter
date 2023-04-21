@@ -2,10 +2,10 @@ av
 av==8.0.3; python_version < '3.7'
 diffusers>=0.12.0
 einops
-face-alignment
-facexlib
+# face-alignment
+# facexlib
 lmdb
-lpips
+# lpips
 mmcv>=2.0.0rc1
 mmengine
 numpy

@@ -414,7 +414,7 @@ class WandbGenVisBackend(WandbVisBackend):
                 'Please run "pip install wandb" to install wandb')
 
         # add timestamp at the end of name
-        timestamp = self._save_dir.split('/')[-2]
+        timestamp = self._save_dir.split('\\')[-2] if '\\' in self._save_dir else self._save_dir.split('/')[-2] 
         orig_name = self._init_kwargs.get('name', None)
         if orig_name:
             self._init_kwargs['name'] = f'{orig_name}_{timestamp}'

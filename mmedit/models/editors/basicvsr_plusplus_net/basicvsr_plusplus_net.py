@@ -326,9 +326,9 @@ class BasicVSRPlusPlusNet(BaseModule):
             feats['spatial'] = [feats_[:, i, :, :, :] for i in range(0, t)]
 
         # compute optical flow using the low-res inputs
-        assert lqs_downsample.size(3) >= 64 and lqs_downsample.size(4) >= 64, (
-            'The height and width of low-res inputs must be at least 64, '
-            f'but got {h} and {w}.')
+        # assert lqs_downsample.size(3) >= 64 and lqs_downsample.size(4) >= 64, (
+        #     'The height and width of low-res inputs must be at least 64, '
+        #     f'but got {h} and {w}.')
         flows_forward, flows_backward = self.compute_flow(lqs_downsample)
 
         # feature propagation

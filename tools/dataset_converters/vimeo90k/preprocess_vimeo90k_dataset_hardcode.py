@@ -17,6 +17,58 @@ from skimage.io import imread, imsave
 from mmedit.datasets.transforms import MATLABLikeResize, blur_kernels
 from mmedit.utils import modify_args
 
+import time
+from shutil import get_terminal_size
+
+class ProgressBar(object):
+    '''A progress bar which can print the progress
+    modified from https://github.com/hellock/cvbase/blob/master/cvbase/progress.py
+    '''
+
+    def __init__(self, task_num=0, bar_width=50, start=True):
+        self.task_num = task_num
+        max_bar_width = self._get_max_bar_width()
+        self.bar_width = (bar_width if bar_width <= max_bar_width else max_bar_width)
+        self.completed = 0
+        if start:
+            self.start()
+
+    def _get_max_bar_width(self):
+        terminal_width, _ = get_terminal_size()
+        max_bar_width = min(int(terminal_width * 0.6), terminal_width - 50)
+        if max_bar_width < 10:
+            print('terminal width is too small ({}), please consider widen the terminal for better '
+                  'progressbar visualization'.format(terminal_width))
+            max_bar_width = 10
+        return max_bar_width
+
+    def start(self):
+        if self.task_num > 0:
+            sys.stdout.write('[{}] 0/{}, elapsed: 0s, ETA:\n{}\n'.format(
+                ' ' * self.bar_width, self.task_num, 'Start...'))
+        else:
+            sys.stdout.write('completed: 0, elapsed: 0s')
+        sys.stdout.flush()
+        self.start_time = time.time()
+
+    def update(self, msg='In progress...'):
+        self.completed += 1
+        elapsed = time.time() - self.start_time
+        # fps = self.completed / elapsed
+        fps = self.completed / elapsed if elapsed != 0 else 60
+        if self.task_num > 0:
+            percentage = self.completed / float(self.task_num)
+            eta = int(elapsed * (1 - percentage) / percentage + 0.5)
+            mark_width = int(self.bar_width * percentage)
+            bar_chars = '>' * mark_width + '-' * (self.bar_width - mark_width)
+            sys.stdout.write('\033[2F')  # cursor up 2 lines
+            sys.stdout.write('\033[J')  # clean the output (remove extra chars since last display)
+            sys.stdout.write('[{}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s\n{}\n'.format(
+                bar_chars, self.completed, self.task_num, fps, int(elapsed + 0.5), eta, msg))
+        else:
+            sys.stdout.write('completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
+                self.completed, int(elapsed + 0.5), fps))
+        sys.stdout.flush()
 
 def make_lmdb(mode,
               data_path,
@@ -48,7 +100,7 @@ def make_lmdb(mode,
     3) compression level: 1
 
     We use the image name without extension as the lmdb key.
-    
+
     Args:
         mode (str): Dataset mode. 'gt' or 'lq'.
         data_path (str): Data path for reading images.
@@ -70,28 +122,55 @@ def make_lmdb(mode,
         sys.exit(1)
 
     print('Reading image path list ...')
-    with open(train_list) as f:
-        train_list = [line.strip() for line in f]
+    # with open(train_list) as f:
+    #     train_list = [line.strip() for line in f]
 
+    # all_img_list = []
+    # keys = []
+    # for line in train_list:
+    #     folder, sub_folder = line.split('/')
+    #     for j in range(1, 8):
+    #         all_img_list.append(
+    #             osp.join(data_path, folder, sub_folder, f'im{j}.png'))
+    #         keys.append('{}_{}_{}'.format(folder, sub_folder, j))
+    # all_img_list = sorted(all_img_list)
+
+    # windows
+    # data_path = '../../data/vimeo_septuplet/vimeo_septuplet/sequences/'
+    # lmdb_path = '../../data/vimeo_septuplet/vimeo_septuplet/vimeo90k_train_GT.lmdb'
+    # train_list = '../../data/vimeo_septuplet/vimeo_septuplet/sep_trainlist.txt'
+
+    data_path = './data/vimeo90k/sequences/'
+    lmdb_path = './data/vimeo90k/vimeo90k_train_GT.lmdb'
+    train_list = './data/vimeo90k/sep_trainlist.txt'
+
+    import glob
+    with open(train_list) as f:
+        train_list = f.readlines()
+        train_list = [v.strip() for v in train_list]
     all_img_list = []
     keys = []
     for line in train_list:
-        folder, sub_folder = line.split('/')
-        for j in range(1, 8):
-            all_img_list.append(
-                osp.join(data_path, folder, sub_folder, f'im{j}.png'))
-            keys.append('{}_{}_{}'.format(folder, sub_folder, j))
+        folder = line.split('/')[0]
+        sub_folder = line.split('/')[1]
+        all_img_list.extend(glob.glob(osp.join(data_path, folder, sub_folder, '*')))
+
+        for j in range(7):
+            keys.append('{}_{}_{}'.format(folder, sub_folder, j + 1))
     all_img_list = sorted(all_img_list)
+
     keys = sorted(keys)
 
-    if mode == 'gt':  # only read the 4th frame for the gt mode
-        print('Only keep the 4th frame for gt mode.')
-        all_img_list = [v for v in all_img_list if v.endswith('im4.png')]
-        keys = [v for v in keys if v.endswith('_4')]
+    # if mode == 'gt':  # only read the 4th frame for the gt mode
+    #     print('Only keep the 4th frame for gt mode.')
+    #     all_img_list = [v for v in all_img_list if v.endswith('im4.png')]
+    #     keys = [v for v in keys if v.endswith('_4')]
 
     # create lmdb environment
     # obtain data size for one image
-    img = mmcv.imread(osp.join(data_path, all_img_list[0]), flag='unchanged')
+    # img = mmcv.imread(osp.join(data_path, all_img_list[0]), flag='unchanged')
+    # import pdb;pdb.set_trace()
+    img = mmcv.imread(all_img_list[0], flag='unchanged') # windows
     _, img_byte = cv2.imencode('.png', img,
                                [cv2.IMWRITE_PNG_COMPRESSION, compress_level])
     data_size_per_img = img_byte.nbytes
@@ -100,13 +179,14 @@ def make_lmdb(mode,
     env = lmdb.open(lmdb_path, map_size=data_size * 10)
 
     # write data to lmdb
-    pbar = mmengine.ProgressBar(len(all_img_list))
+    pbar = ProgressBar(len(all_img_list))
     txn = env.begin(write=True)
     txt_file = open(osp.join(lmdb_path, 'meta_info.txt'), 'w')
     for idx, (path, key) in enumerate(zip(all_img_list, keys)):
-        pbar.update()
+        pbar.update('Write {}'.format(key))
         key_byte = key.encode('ascii')
-        img = mmcv.imread(osp.join(data_path, path), flag='unchanged')
+        # img = mmcv.imread(osp.join(data_path, path), flag='unchanged')
+        img = mmcv.imread(path, flag='unchanged')
         h, w, c = img.shape
         _, img_byte = cv2.imencode(
             '.png', img, [cv2.IMWRITE_PNG_COMPRESSION, compress_level])
@@ -126,6 +206,7 @@ def make_lmdb(mode,
 
 def generate_anno_file(clip_list, file_name='meta_info_Vimeo90K_GT.txt'):
     """Generate anno file for Vimeo90K datasets from the official clip list.
+
     Args:
         clip_list (str): Clip list path for Vimeo90K datasets.
         file_name (str): Saved file name. Default: 'meta_info_Vimeo90K_GT.txt'.
@@ -142,6 +223,7 @@ def generate_anno_file(clip_list, file_name='meta_info_Vimeo90K_GT.txt'):
 
 def imresize(img_path, output_path, scale=None, output_shape=None):
     """Resize the image using MATLAB-like downsampling.
+
     Args:
         img_path (str): Input image path.
         output_path (str): Output image path.
@@ -167,8 +249,10 @@ def imresize(img_path, output_path, scale=None, output_shape=None):
 
 def mesh_grid(kernel_size):
     """Generate the mesh grid, centering at zero.
+
     Args:
         kernel_size (int): The size of the kernel.
+
     Returns:
         xy_grid (np.ndarray): stacked xy coordinates with shape
             (kernel_size, kernel_size, 2).
@@ -185,6 +269,7 @@ def mesh_grid(kernel_size):
 
 def bd_downsample(img_path, output_path, sigma=1.6, scale=4):
     """Downsampling using BD degradation(Gaussian blurring and downsampling).
+
     Args:
         img_path (str): Input image path.
         output_path (str): Output image path.
@@ -217,8 +302,10 @@ def bd_downsample(img_path, output_path, sigma=1.6, scale=4):
 
 def worker(clip_path, args):
     """Worker for each process.
+
     Args:
         clip_name (str): Path of the clip.
+
     Returns:
         process_info (str): Process information displayed in progress bar.
     """
@@ -273,7 +360,7 @@ def parse_args():
         type=int,
         help='thread number when using multiprocessing')
     parser.add_argument(
-        '--train_list',
+        '--train-list',
         default=None,
         help='official training list path for Vimeo90K')
     parser.add_argument('--gt-path', default=None, help='GT path for Vimeo90K')

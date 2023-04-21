@@ -1,3 +1,7 @@
+# some generate files
+src/*
+demo/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

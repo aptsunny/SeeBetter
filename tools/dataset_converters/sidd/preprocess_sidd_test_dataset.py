@@ -19,8 +19,11 @@ def export_images(args):
     gt_dir = osp.join(args.out_dir, 'gt')
     os.makedirs(gt_dir, exist_ok=True)
 
-    noisy_matfile = osp.join(args.data_root, 'ValidationNoisyBlocksSrgb.mat')
-    gt_matfile = osp.join(args.data_root, 'ValidationGtBlocksSrgb.mat')
+    # hardcode
+    noisy_matfile = r'D:\workspace\mmediting\data\SIDD\test\SIDD\ValidationNoisyBlocksSrgb.mat'
+    gt_matfile = r'D:\workspace\mmediting\data\SIDD\test\SIDD\ValidationGtBlocksSrgb.mat'
+    # noisy_matfile = osp.join(args.data_root, 'ValidationNoisyBlocksSrgb.mat')
+    # gt_matfile = osp.join(args.data_root, 'ValidationGtBlocksSrgb.mat')
     noisy_images = sio.loadmat(noisy_matfile)
     gt_images = sio.loadmat(gt_matfile)
 

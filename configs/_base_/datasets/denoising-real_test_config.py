@@ -1,3 +1,8 @@
+_base_ = [
+    './denoising-real_test_config_sidd.py'
+    # './denoising-real_test_config_dnn.py'
+]
+
 test_pipeline = [
     dict(
         type='LoadImageFromFile',
@@ -14,47 +19,13 @@ test_pipeline = [
     dict(type='PackEditInputs')
 ]
 
-sidd_data_root = 'data/SIDD'
-sidd_dataloader = dict(
-    num_workers=4,
-    persistent_workers=False,
-    drop_last=False,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type='BasicImageDataset',
-        metainfo=dict(dataset_type='SIDD', task_name='denoising'),
-        data_root=sidd_data_root,
-        data_prefix=dict(img='input', gt='groundtruth'),
-        pipeline=test_pipeline))
-sidd_evaluator = [
-    dict(type='PSNR', prefix='SIDD'),
-    dict(type='SSIM', prefix='SIDD'),
-]
-
-dnd_data_root = 'data/DND'
-dnd_dataloader = dict(
-    num_workers=4,
-    persistent_workers=False,
-    drop_last=False,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type='BasicImageDataset',
-        metainfo=dict(dataset_type='DND', task_name='denoising'),
-        data_root=dnd_data_root,
-        data_prefix=dict(img='input', gt='groundtruth'),
-        pipeline=test_pipeline))
-dnd_evaluator = [
-    dict(type='PSNR', prefix='DND'),
-    dict(type='SSIM', prefix='DND'),
-]
-
 # test config
-test_cfg = dict(type='MultiTestLoop')
+test_cfg = dict(type='EditTestLoop')
 test_dataloader = [
-    sidd_dataloader,
-    # dnd_dataloader,
+    _base_.sidd_dataloader,
+    # _base_.dnd_dataloader,
 ]
 test_evaluator = [
-    sidd_evaluator,
-    # dnd_dataloader,
+    _base_.sidd_evaluator,
+    # _base_.dnd_dataloader,
 ]
