@@ -331,11 +331,22 @@ class BasicFramesDataset(BaseDataset):
 
         Return:
             list[str]: The paths list of frames.
+
+        CFG:
+            load_frames_list=dict(img=[key], gt=[key])
+
+            1. `all`: all frames in the folder.
+            2. `sample_five`: the last five frames.
+            3. `center_of_five`: the center of the last five frames.
+
         """
 
         if 'all' in self.load_frames_list[key]:
-            # load all
             files = list(self.file_backend.list_dir_or_file(dir_path=folder))
+        elif 'sample_five' in self.load_frames_list[key]:
+            files = list(self.file_backend.list_dir_or_file(dir_path=folder))[-5:]
+        elif 'center_of_five' in self.load_frames_list[key]:
+            files = list(self.file_backend.list_dir_or_file(dir_path=folder))[-3:-2]
         else:
             files = self.load_frames_list[key]
 

@@ -7,10 +7,12 @@ from mmengine.model import BaseModel
 from mmagic.registry import MODELS
 from mmagic.structures import DataSample
 
+from mmagic.datasets.transforms.gcp_process import process_train
+
 
 @MODELS.register_module()
-class BaseEditModel(BaseModel):
-    """Base model for image and video editing.
+class BaseDenoiseModel(BaseModel):
+    """Base model for image denoise.
 
     It must contain a generator that takes frames as inputs and outputs an
     interpolated frame. It also has a pixel-wise loss for training.
@@ -104,7 +106,12 @@ class BaseEditModel(BaseModel):
                   or ``dict`` or tensor for custom use.
         """
         if isinstance(inputs, dict):
+            gt = inputs['gt']
+            noise_map = inputs['noise_map']
+            metadata = inputs['metadata']
             inputs = inputs['img']
+            noise_map = torch.stack(noise_map, axis=0)
+            inputs = torch.stack(inputs, axis=0)
         if mode == 'tensor':
             return self.forward_tensor(inputs, data_samples, **kwargs)
 
@@ -116,7 +123,7 @@ class BaseEditModel(BaseModel):
             return predictions
 
         elif mode == 'loss':
-            return self.forward_train(inputs, data_samples, **kwargs)
+            return self.forward_train(inputs, noise_map, gt, metadata, data_samples, **kwargs)
 
     def convert_to_datasample(self, predictions: DataSample,
                               data_samples: DataSample,
@@ -150,6 +157,7 @@ class BaseEditModel(BaseModel):
 
     def forward_tensor(self,
                        inputs: torch.Tensor,
+                       noise_map: torch.Tensor,
                        data_samples: Optional[List[DataSample]] = None,
                        **kwargs) -> torch.Tensor:
         """Forward tensor. Returns result of simple forward.
@@ -164,7 +172,7 @@ class BaseEditModel(BaseModel):
             Tensor: result of simple forward.
         """
 
-        feats = self.generator(inputs, **kwargs)
+        feats = self.generator(inputs, noise_map, **kwargs)
 
         return feats
 
@@ -195,6 +203,9 @@ class BaseEditModel(BaseModel):
 
     def forward_train(self,
                       inputs: torch.Tensor,
+                      noise_map: torch.Tensor,
+                      gt: torch.Tensor,
+                      metadata: Dict,
                       data_samples: Optional[List[DataSample]] = None,
                       **kwargs) -> Dict[str, torch.Tensor]:
         """Forward training. Returns dict of losses of training.
@@ -209,9 +220,16 @@ class BaseEditModel(BaseModel):
             dict: Dict of losses.
         """
 
-        feats = self.forward_tensor(inputs, data_samples, **kwargs)
-        batch_gt_data = data_samples.gt_img
+        feats = self.forward_tensor(inputs, noise_map, data_samples, **kwargs)
+        batch_gt_data = torch.stack(gt, axis=0)
+        batch_gt_data = batch_gt_data.view(len(gt), -1, batch_gt_data.shape[-1], batch_gt_data.shape[-1])
+        loss = self.pixel_loss(feats, batch_gt_data) * 0.5
 
-        loss = self.pixel_loss(feats, batch_gt_data)
+        red_gains = torch.stack(metadata['red_gain'], axis=0)
+        blue_gains = torch.stack(metadata['blue_gain'], axis=0)
+        cam2rgbs = torch.stack(metadata['cam2rgb'], axis=0)
+        fake_H_rgb = process_train(feats, red_gains, blue_gains, cam2rgbs)
+        real_H_rgb = process_train(batch_gt_data, red_gains, blue_gains, cam2rgbs)
+        rgbloss = self.pixel_loss(fake_H_rgb, real_H_rgb)
 
-        return dict(loss=loss)
+        return dict(pixel_loss=loss, rgbloss=rgbloss)
