@@ -1,29 +1,32 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
 import random
 from copy import deepcopy
 from typing import Dict, List, Union
 
 import mmcv
 import numpy as np
+import torch
 from mmcv.transforms import BaseTransform
 from mmengine.utils import is_tuple_of
 
 from mmagic.registry import TRANSFORMS
+from .gcp_unprocess import (add_noise, apply_ccm, gamma_expansion,
+                            inverse_smoothstep, mosaic, random_ccm,
+                            random_gains, random_noise_levels_kpn,
+                            safe_invert_gains)
 
-from .gcp_unprocess import random_ccm, random_gains, inverse_smoothstep, gamma_expansion, apply_ccm, safe_invert_gains, random_noise_levels_kpn, mosaic, add_noise
 
 @TRANSFORMS.register_module()
 class Img2LQ_Raws(BaseTransform):
     """Img2LQ_Raws.
 
-        CFG:
+    CFG:
 
-        dict(type='Img2LQ_Raws', key='img', global_align=False, sensor_noise=False)
+    dict(type='Img2LQ_Raws', key='img', global_align=False, sensor_noise=False)
 
-        dict(type='Img2LQ_Raws', key='img', global_align=True, sensor_noise=True)
-
+    dict(type='Img2LQ_Raws', key='img', global_align=True, sensor_noise=True)
     """
+
     def __init__(self, key, global_align=False, sensor_noise=False):
         self.key = key
         self.global_align = global_align
@@ -32,7 +35,8 @@ class Img2LQ_Raws(BaseTransform):
     def BGR2RGB(self, img_bgr):
         return img_bgr[..., ::-1]
 
-    def unprocess_meta_gt(self, image, rgb_gains, red_gains, blue_gains, rgb2cam, cam2rgb):
+    def unprocess_meta_gt(self, image, rgb_gains, red_gains, blue_gains,
+                          rgb2cam, cam2rgb):
         """Unprocesses an image from sRGB to realistic raw data."""
 
         # Approximately inverts global tone mapping.
@@ -67,19 +71,17 @@ class Img2LQ_Raws(BaseTransform):
             raw = self.BGR2RGB(results[self.key][i])
             raw = torch.from_numpy(np.ascontiguousarray(raw))
             raw = raw.permute(2, 0, 1)
-            raw, _ = self.unprocess_meta_gt(
-                raw, metadata['rgb_gain'],
-                metadata['red_gain'],
-                metadata['blue_gain'],
-                metadata['rgb2cam'],
-                metadata['cam2rgb']
-            )
+            raw, _ = self.unprocess_meta_gt(raw, metadata['rgb_gain'],
+                                            metadata['red_gain'],
+                                            metadata['blue_gain'],
+                                            metadata['rgb2cam'],
+                                            metadata['cam2rgb'])
             raws.append(raw)
 
         raws = [mosaic(v) for v in raws]
         raws = [add_noise(v, shot_noise, read_noise, 1) for v in raws]
 
-        raws = [v.clamp(-64/1023., 1.0) for v in raws]
+        raws = [v.clamp(-64 / 1023., 1.0) for v in raws]
         noise_map = [shot_noise * v + read_noise for v in raws]
         img_LQs = torch.stack(raws, axis=0)
         img_NMaps = torch.stack(noise_map, axis=0)
@@ -94,19 +96,32 @@ class Img2LQ_Raws(BaseTransform):
 class Img2GT_Raws(BaseTransform):
     """Img2GT_Raws.
 
-        CFG:
+    CFG:
 
-        dict(type='Img2GT_Raws', key='gt', rgb_gain_ratio=1.0, red_gain_range=[1.9, 2.4], blue_gain_range=[1.5, 1.9])
+    dict(
+        type='Img2GT_Raws',
+        key='gt',
+        rgb_gain_ratio=1.0,
+        red_gain_range=[1.9, 2.4],
+        blue_gain_range=[1.5, 1.9])
 
-        dict(type='Img2GT_Raws', key='gt', rgb_gain_ratio=1.0, red_gain_range=[1.5, 3], blue_gain_range=[1.5, 3.5])
-
+    dict(
+        type='Img2GT_Raws',
+        key='gt',
+        rgb_gain_ratio=1.0,
+        red_gain_range=[1.5, 3],
+        blue_gain_range=[1.5, 3.5])
     """
 
-    def __init__(self, key, rgb_gain_ratio=1.0, red_gain_range=[1.5, 3], blue_gain_range=[1.5, 3.5]):
+    def __init__(self,
+                 key,
+                 rgb_gain_ratio=1.0,
+                 red_gain_range=[1.5, 3],
+                 blue_gain_range=[1.5, 3.5]):
         self.key = key
-        self.rgb_gain_ratio=rgb_gain_ratio
-        self.red_gain_range=red_gain_range
-        self.blue_gain_range=blue_gain_range
+        self.rgb_gain_ratio = rgb_gain_ratio
+        self.red_gain_range = red_gain_range
+        self.blue_gain_range = blue_gain_range
 
     def BGR2RGB(self, img_bgr):
         return img_bgr[..., ::-1]
@@ -117,7 +132,9 @@ class Img2GT_Raws(BaseTransform):
         # Randomly creates image metadata.
         rgb2cam = random_ccm()
         cam2rgb = torch.inverse(rgb2cam)
-        rgb_gain, red_gain, blue_gain = random_gains(self.rgb_gain_ratio, self.red_gain_range, self.blue_gain_range)
+        rgb_gain, red_gain, blue_gain = random_gains(self.rgb_gain_ratio,
+                                                     self.red_gain_range,
+                                                     self.blue_gain_range)
 
         # Approximately inverts global tone mapping.
         image = inverse_smoothstep(image)
