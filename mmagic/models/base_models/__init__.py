@@ -21,6 +21,6 @@ __all__ = [
     'TwoStageInpaintor',
     'ExponentialMovingAverage',
     'RampUpEMA',
-    # 
+    #
     'BaseDenoiseModel',
 ]

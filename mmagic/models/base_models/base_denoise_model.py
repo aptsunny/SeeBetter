@@ -4,10 +4,9 @@ from typing import Dict, List, Optional, Union
 import torch
 from mmengine.model import BaseModel
 
+from mmagic.datasets.transforms.gcp_process import process_train
 from mmagic.registry import MODELS
 from mmagic.structures import DataSample
-
-from mmagic.datasets.transforms.gcp_process import process_train
 
 
 @MODELS.register_module()
@@ -123,7 +122,8 @@ class BaseDenoiseModel(BaseModel):
             return predictions
 
         elif mode == 'loss':
-            return self.forward_train(inputs, noise_map, gt, metadata, data_samples, **kwargs)
+            return self.forward_train(inputs, noise_map, gt, metadata,
+                                      data_samples, **kwargs)
 
     def convert_to_datasample(self, predictions: DataSample,
                               data_samples: DataSample,
@@ -222,14 +222,16 @@ class BaseDenoiseModel(BaseModel):
 
         feats = self.forward_tensor(inputs, noise_map, data_samples, **kwargs)
         batch_gt_data = torch.stack(gt, axis=0)
-        batch_gt_data = batch_gt_data.view(len(gt), -1, batch_gt_data.shape[-1], batch_gt_data.shape[-1])
+        batch_gt_data = batch_gt_data.view(
+            len(gt), -1, batch_gt_data.shape[-1], batch_gt_data.shape[-1])
         loss = self.pixel_loss(feats, batch_gt_data) * 0.5
 
         red_gains = torch.stack(metadata['red_gain'], axis=0)
         blue_gains = torch.stack(metadata['blue_gain'], axis=0)
         cam2rgbs = torch.stack(metadata['cam2rgb'], axis=0)
         fake_H_rgb = process_train(feats, red_gains, blue_gains, cam2rgbs)
-        real_H_rgb = process_train(batch_gt_data, red_gains, blue_gains, cam2rgbs)
+        real_H_rgb = process_train(batch_gt_data, red_gains, blue_gains,
+                                   cam2rgbs)
         rgbloss = self.pixel_loss(fake_H_rgb, real_H_rgb)
 
         return dict(pixel_loss=loss, rgbloss=rgbloss)
