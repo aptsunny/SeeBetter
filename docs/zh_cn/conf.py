@@ -21,9 +21,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MMagic'
-copyright = '2023, MMagic Authors'
-author = 'MMagic Authors'
+project = 'SeeBetter'
+copyright = '2023, SeeBetter Authors'
+author = 'SeeBetter Authors'
 
 # -- General configuration ---------------------------------------------------
 
@@ -102,7 +102,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmagic',
+            'url': 'https://github.com/aptsunny/SeeBetter',
         },
         {
             'name':
@@ -110,12 +110,12 @@ html_theme_options = {
             'children': [
                 {
                     'name': 'MMagic 1.x',
-                    'url': 'https://mmagic.readthedocs.io/zh_CN/latest/',
+                    'url': 'https://seebetter.readthedocs.io/zh_CN/latest/',
                     'description': 'Main 分支文档'
                 },
                 {
                     'name': 'MMEditing 0.x',
-                    'url': 'https://mmagic.readthedocs.io/zh_CN/0.x/',
+                    'url': 'https://seebetter.readthedocs.io/zh_CN/0.x/',
                     'description': '0.x 分支文档'
                 },
             ],
