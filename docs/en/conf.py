@@ -113,13 +113,13 @@ html_theme_options = {
             'Version',
             'children': [
                 {
-                    'name': 'SeeBetter 1.x',
+                    'name': 'SeeBetter 2.x',
                     'url': 'https://seebetter.readthedocs.io/en/latest/',
                     'description': 'Main branch'
                 },
                 {
-                    'name': 'MMEditing 0.x',
-                    'url': 'https://mmagic.readthedocs.io/en/0.x/',
+                    'name': 'MMagic 0.x',
+                    'url': 'https://mmagic.readthedocs.io/en/latest/',
                     'description': '0.x branch',
                 },
             ],

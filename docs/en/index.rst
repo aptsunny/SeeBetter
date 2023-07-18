@@ -1,10 +1,10 @@
-Welcome to MMagic's documentation!
+Welcome to SeeBetter's documentation!
 =====================================
 
 Languages:
-`English <https://mmagic.readthedocs.io/en/latest/>`_
+`English <https://seebetter.readthedocs.io/en/latest/>`_
 |
-`简体中文 <https://mmagic.readthedocs.io/zh_CN/latest/>`_
+`简体中文 <https://seebetter.readthedocs.io/zh_CN/latest/>`_
 
 MMagic (**M**\ultimodal **A**\dvanced, **G**\enerative, and **I**\ntelligent **C**\reation) is an open-source AIGC toolbox for professional AI researchers and machine learning engineers to explore image and video processing, editing and generation.
 
