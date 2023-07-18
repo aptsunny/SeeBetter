@@ -21,9 +21,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MMagic'
-copyright = '2023, MMagic Authors'
-author = 'MMagic Authors'
+project = 'SeeBetter'
+copyright = '2023, SeeBetter Authors'
+author = 'SeeBetter Authors'
 
 # -- General configuration ---------------------------------------------------
 
@@ -106,15 +106,15 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmagic',
+            'url': 'https://github.com/aptsunny/SeeBetter',
         },
         {
             'name':
             'Version',
             'children': [
                 {
-                    'name': 'MMagic 1.x',
-                    'url': 'https://mmagic.readthedocs.io/en/latest/',
+                    'name': 'SeeBetter 1.x',
+                    'url': 'https://seebetter.readthedocs.io/en/latest/',
                     'description': 'Main branch'
                 },
                 {
