@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Mapping
 
-import mmcv
+import mmengine
 import torch.distributed as dist
 from mmengine.registry import DATA_SAMPLERS
 from torch.utils.data import Sampler
@@ -113,20 +113,14 @@ class MultiSourceSampler(Sampler):
                 samplers.append(
                     DATA_SAMPLERS.build(
                         cfg,
-                        default_args=dict(
-                            dataset=self.dataset.datasets[i],
-                            num_replicas=self.num_replicas,
-                            rank=self.rank)))
+                        default_args=dict(dataset=self.dataset.datasets[i])))
             elif isinstance(sub_sampler, Sampler):
                 samplers.append(sub_sampler)
             elif isinstance(sub_sampler, Mapping):
                 samplers.append(
                     DATA_SAMPLERS.build(
                         sub_sampler,
-                        default_args=dict(
-                            dataset=self.dataset.datasets[i],
-                            num_replicas=self.num_replicas,
-                            rank=self.rank)))
+                        default_args=dict(dataset=self.dataset.datasets[i])))
             else:
                 raise ValueError(
                     'sub_sampler must be None or Sampler or Mapping, '
@@ -157,7 +151,7 @@ class MultiSourceSampler(Sampler):
             epoch (int): Epoch number.
         """
         for sampler in self.sub_samplers:
-            if mmcv.has_method(sampler, 'set_epoch'):
+            if mmengine.has_method(sampler, 'set_epoch'):
                 try:
                     sampler.set_epoch(epoch)
                 except NotImplementedError:

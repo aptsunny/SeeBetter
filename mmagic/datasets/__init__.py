@@ -9,6 +9,8 @@ from .dreambooth_dataset import DreamBoothDataset
 from .grow_scale_image_dataset import GrowScaleImgDataset
 from .imagenet_dataset import ImageNet
 from .mscoco_dataset import MSCoCoDataset
+from .multi_source_dataset import MultiSourceDataset
+from .multi_source_sampler import MultiSourceSampler
 from .paired_image_dataset import PairedImageDataset
 from .singan_dataset import SinGANDataset
 from .unpaired_image_dataset import UnpairedImageDataset
@@ -18,5 +20,6 @@ __all__ = [
     'BasicConditionalDataset', 'UnpairedImageDataset', 'PairedImageDataset',
     'ImageNet', 'CIFAR10', 'GrowScaleImgDataset', 'SinGANDataset',
     'MSCoCoDataset', 'ControlNetDataset', 'DreamBoothDataset',
-    'ControlNetDataset', 'SDFinetuneDataset'
+    'ControlNetDataset', 'SDFinetuneDataset', 'MultiSourceDataset',
+    'MultiSourceSampler'
 ]

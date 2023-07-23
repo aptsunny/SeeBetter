@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import bisect
-from typing import Dict, Mapping, Sequence
+from typing import Mapping, Sequence
 
 from torch.utils.data import Dataset
 
@@ -64,15 +64,4 @@ class MultiSourceDataset(Dataset):
             sample_idx = idx
         else:
             sample_idx = idx - self.cumulative_sizes[dataset_idx - 1]
-        return self._convert_keys(dataset_idx,
-                                  self.datasets[dataset_idx][sample_idx])
-
-    def _convert_keys(self, dataset_idx, results):
-        """Prefix the output keys."""
-        assert isinstance(
-            results, Dict
-        ), f'Data pipeline result must be dict, but get {type(results)}'
-        new_result = dict()
-        for k, v in results.items():
-            new_result[f'{self.prefixes[dataset_idx]}.{k}'] = v
-        return new_result
+        return self.datasets[dataset_idx][sample_idx]
