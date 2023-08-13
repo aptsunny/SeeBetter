@@ -109,9 +109,7 @@ class ISP:
         return img
 
     def white_balance(self, img, gains):
-        """
-        White Balance 3000 * 4000
-        """
+        """White Balance."""
         fr_now = gains.fr_now
         fg_now = gains.fg_now
         fb_now = gains.fb_now
@@ -134,19 +132,41 @@ class ISP:
         return img
 
     def demosaic(self, img, pattern):
-        """# Demosaic (3000, 4000, 3)"""
+        """Demosaic."""
         img = demosaicing_CFA_Bayer_Malvar2004(img, pattern)
         img = np.clip(img, 0, 1)
         return img
 
     def color_matrix_correction(self, img, cam):
-        cam = np.reshape(cam, (3, 3))
-        img = np.matmul(img, cam.T)
+        if isinstance(cam, dict):
+            diagonal = cam.diagonal
+            extra = cam.extra
+            ccm_matrix = ([[((139 + diagonal) / 128), ((-49 + extra) / 128),
+                            ((37 + extra) / 128)],
+                           [((-25 + extra) / 128), ((118 + diagonal) / 128),
+                            ((35 + extra) / 128)],
+                           [((-8 + extra) / 128), ((-128 + extra) / 128),
+                            ((264 + diagonal) / 128)]])
+
+            def flatten(sequence):
+                for item in sequence:
+                    if type(item) is list:
+                        for subitem in flatten(item):
+                            yield subitem
+                    else:
+                        yield item
+
+            M_cam = list(flatten(ccm_matrix))
+        else:
+            M_cam = cam
+
+        M_cam = np.reshape(M_cam, (3, 3))
+        img = np.matmul(img, M_cam.T)
         img = np.clip(img, 0, 1)
         return img
 
     def gamma_correction(self, img, gamma):
-        """# BT.601标准的gamma变换，ref https://www.nmm-
+        """BT.601标准的gamma变换 ref https://www.nmm-
         hd.org/newbbs/viewtopic.php?t=1286."""
         img = np.where(
             img <= np.ones_like(img) * gamma.k0 / gamma.phi,

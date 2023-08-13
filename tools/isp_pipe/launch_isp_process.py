@@ -95,16 +95,21 @@ def load_gains_ccm_params(frame_dir):
         gains = list(
             map(float,
                 re.search(re_pattern, text).group(1).strip().split(' ')))
-
         # 一般来说，白平衡中的G gain设置为1，所以此处排列应为RGGB
         fr_now, fg_now, fb_now = gains[0], (gains[1] + gains[2]) / 2, gains[3]
 
         re_pattern = r'MainColorCorrectionTransform\n\t \*\*\* Start Payload\*\*\*\*\n\t(.*?)\n\t \*\*\*'  # noqa: E501
-        matched_text = (re.search(re_pattern, text,
-                                  re.DOTALL).group(1).replace('\n\t', '')
-                        )  # 多行抽取，需要加上re.DOTALL
+        # 多行抽取，需要加上re.DOTALL
+        matched_text = (
+            re.search(re_pattern, text,
+                      re.DOTALL).group(1).replace('\n\t', ''))
         M_cam = list(map(eval, re.findall(r'\((.*?)\)', matched_text)))
-    return fr_now, fg_now, fb_now, M_cam
+    wbc = dict(
+        fr_now=fr_now,
+        fg_now=fg_now,
+        fb_now=fb_now,
+    )
+    return wbc, M_cam
 
 
 def run_pipeline(cfg):
@@ -112,33 +117,14 @@ def run_pipeline(cfg):
     lsc_grid_file = cfg.lsc_grid_file
     width = cfg.get('width', 4000)
     height = cfg.get('height', 3000)
+    gamma = cfg.gamma
 
     # load params from file
     img_raw = Mipi2Raw(frame_dir, width, height)
-    fr_now, fg_now, fb_now, M_cam = load_gains_ccm_params(frame_dir)
+    wbc, M_cam = load_gains_ccm_params(frame_dir)
 
     if cfg.lsc_grid_file:
         lsc = load_lsc_params(frame_dir, lsc_grid_file)
-
-    if cfg.cam:
-        diagonal = cfg.cam.diagonal
-        extra = cfg.cam.extra
-        ccm_matrix = ([[((139 + diagonal) / 128), ((-49 + extra) / 128),
-                        ((37 + extra) / 128)],
-                       [((-25 + extra) / 128), ((118 + diagonal) / 128),
-                        ((35 + extra) / 128)],
-                       [((-8 + extra) / 128), ((-128 + extra) / 128),
-                        ((264 + diagonal) / 128)]])
-
-        def flatten(sequence):
-            for item in sequence:
-                if type(item) is list:
-                    for subitem in flatten(item):
-                        yield subitem
-                else:
-                    yield item
-
-        M_cam = list(flatten(ccm_matrix))
 
     cfg.isp_pipe = dict(
         type='ISP',
@@ -148,9 +134,9 @@ def run_pipeline(cfg):
         img_width=width,
         img_height=height,
         lsc=lsc,
-        gains=cfg.wbc,
-        cam=M_cam,
-        gamma=cfg.gamma)
+        gains=cfg.get('wbc', wbc),
+        cam=cfg.get('cam', M_cam),
+        gamma=gamma)
 
     isp_pipeline = MODELS.build(cfg.isp_pipe)
 
@@ -186,11 +172,12 @@ def run_pipeline(cfg):
         if cfg.is_save_img.final:
             save_img(
                 img_Irgb, filename_prefix +
-                'Img_final_{}_e_{}_p_{}_g_{}_{}_{}_b_{}_g_{}_{}_{}_{}.png'.
-                format(diagonal, extra, isp_pipeline.pattern, fr_now, fg_now,
-                       fb_now, isp_pipeline.blacklevel,
-                       isp_pipeline.gamma.value, isp_pipeline.gamma.k0,
-                       isp_pipeline.gamma.phi, isp_pipeline.gamma.alpha))
+                'Img_final_p_{}_g_{}_{}_{}_b_{}_g_{}_{}_{}_{}.png'.format(
+                    isp_pipeline.pattern, isp_pipeline.gains.fr_now,
+                    isp_pipeline.gains.fg_now, isp_pipeline.gains.fb_now,
+                    isp_pipeline.blacklevel, isp_pipeline.gamma.value,
+                    isp_pipeline.gamma.k0, isp_pipeline.gamma.phi,
+                    isp_pipeline.gamma.alpha))
 
         if cfg.is_save_img.concat:
             img_join = np.concatenate(
@@ -207,7 +194,6 @@ def run_pipeline(cfg):
                 axis=0,
             )
 
-            # TODO
             save_img(
                 img_join, filename_prefix + 'img_pipeline_gamma_{}.png'.format(
                     str(isp_pipeline.gamma.value)))
