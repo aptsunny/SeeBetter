@@ -30,7 +30,6 @@ pattern = 'GRBG'
 # blc
 blacklevel = 64
 whitelevel = 2**10 - 1
-# python ISP_implement.py isp_cfg.py --cfg-options blacklevel=32
 
 # 2 exp wbc
 # (1.35449219, 1.0, 2.48828125)
