@@ -55,12 +55,12 @@ def save_img(img, filename):
 
 
 def load_lsc_params(frame_dir, lsc_grid_file):
-    # 以下是LSC所需的参数，采用的是mesh shading correction # noqa: E501
+    # Mesh Shading Correction
     with open(lsc_grid_file, 'r') as tf:
         lines = tf.readlines()
-
-        lsc_grid_x = list(map(
-            int, lines[0][11:].strip().split(',')))  # 去掉前缀，修改时注意将11替换为其他前缀长度
+        # position_x:
+        lsc_grid_x = list(map(int, lines[0][11:].strip().split(',')))
+        # position_y:
         lsc_grid_y = list(map(int, lines[1][11:].strip().split(',')))
 
     lsc_map_files = [
@@ -68,10 +68,27 @@ def load_lsc_params(frame_dir, lsc_grid_file):
         frame_dir + 'lsc_G_map.txt',
         frame_dir + 'lsc_B_map.txt',
     ]
-    return lsc_grid_x, lsc_grid_y, lsc_map_files
+
+    lsc_map_list = []
+    for lsc_map_file in lsc_map_files:
+        with open(lsc_map_file, 'r') as tf:
+            lines = tf.readlines()
+            lsc_map_channel = []
+            for line in lines:
+                lsc_map_channel.append(
+                    list(map(int,
+                             line.strip().split('\t'))))
+        lsc_map_channel = np.array(lsc_map_channel)
+        lsc_map_channel_pad = np.pad(lsc_map_channel, 1, mode='reflect')
+        lsc_map_list.append(lsc_map_channel_pad)
+    lsc_map = np.stack(lsc_map_list, axis=2).astype(np.uint16)
+    lsc_map = lsc_map.astype(np.float32) / lsc_map.min()
+
+    lsc = dict(lsc_grid_x=lsc_grid_x, lsc_grid_y=lsc_grid_y, lsc_map=lsc_map)
+    return lsc
 
 
-def load_gains_params(frame_dir):
+def load_gains_ccm_params(frame_dir):
     with open(glob(frame_dir[:-2] + '*.txt')[0], 'r') as tf:
         text = tf.read()
         re_pattern = r'MainColorCorrectionGains\n\t \*\*\* Start Payload\*\*\*\*\n\t(.*?)\n\t \*\*\*'  # noqa: E501
@@ -91,25 +108,17 @@ def load_gains_params(frame_dir):
 
 
 def run_pipeline(cfg):
-    pattern = cfg.pattern
-    blacklevel = cfg.blacklevel
-    whitelevel = cfg.whitelevel
-    width = cfg.width
-    height = cfg.height
     frame_dir = cfg.frame_dir
     lsc_grid_file = cfg.lsc_grid_file
-    use_c_plugin = cfg.use_c_plugin
+    width = cfg.get('width', 4000)
+    height = cfg.get('height', 3000)
 
     # load params from file
     img_raw = Mipi2Raw(frame_dir, width, height)
-    fr_now, fg_now, fb_now, M_cam = load_gains_params(frame_dir)
-    lsc_grid_x, lsc_grid_y, lsc_map_files = load_lsc_params(
-        frame_dir, lsc_grid_file)
+    fr_now, fg_now, fb_now, M_cam = load_gains_ccm_params(frame_dir)
 
-    if cfg.wbc:
-        fr_now = cfg.wbc.fr_now
-        fg_now = cfg.wbc.fg_now
-        fb_now = cfg.wbc.fb_now
+    if cfg.lsc_grid_file:
+        lsc = load_lsc_params(frame_dir, lsc_grid_file)
 
     if cfg.cam:
         diagonal = cfg.cam.diagonal
@@ -131,31 +140,17 @@ def run_pipeline(cfg):
 
         M_cam = list(flatten(ccm_matrix))
 
-    if cfg.gamma:
-        gamma = cfg.gamma.value
-        k0 = cfg.gamma.k0
-        phi = cfg.gamma.phi
-        alpha = cfg.gamma.alpha
-
     cfg.isp_pipe = dict(
         type='ISP',
-        pattern=pattern,
-        whitelevel=whitelevel,
-        blacklevel=blacklevel,
+        pattern=cfg.get('pattern', 'GRBG'),
+        whitelevel=cfg.get('whitelevel', 64),
+        blacklevel=cfg.get('blacklevel', 1023),
         img_width=width,
         img_height=height,
-        lsc_grid_x=lsc_grid_x,
-        lsc_grid_y=lsc_grid_y,
-        lsc_map_files=lsc_map_files,
-        fr_now=fr_now,
-        fg_now=fg_now,
-        fb_now=fb_now,
-        M_cam=M_cam,
-        use_c_plugin=use_c_plugin,
-        gamma=gamma,
-        k0=k0,
-        phi=phi,
-        alpha=alpha)
+        lsc=lsc,
+        gains=cfg.wbc,
+        cam=M_cam,
+        gamma=cfg.gamma)
 
     isp_pipeline = MODELS.build(cfg.isp_pipe)
 
@@ -163,12 +158,12 @@ def run_pipeline(cfg):
         isp_pipeline.raw2rgb(img_raw)
 
     if cfg.is_save_img:
-        os.makedirs(cfg.is_save_img.save_dirs, exist_ok=True)
-        filename_prefix = cfg.is_save_img.save_dirs + frame_dir.replace(
-            '/', '_')
+        os.makedirs(cfg.save_dirs, exist_ok=True)
+        filename_prefix = cfg.save_dirs + frame_dir.replace('/', '_')
 
         if cfg.is_save_img.input:
-            save_img(img_raw / whitelevel, filename_prefix + '0_img_raw.png')
+            save_img(img_raw / isp_pipeline.whitelevel,
+                     filename_prefix + '0_img_raw.png')
 
         if cfg.is_save_img.blc:
             save_img(img_mosaic, filename_prefix + '1_img_mosaic.png')
@@ -192,16 +187,18 @@ def run_pipeline(cfg):
             save_img(
                 img_Irgb, filename_prefix +
                 'Img_final_{}_e_{}_p_{}_g_{}_{}_{}_b_{}_g_{}_{}_{}_{}.png'.
-                format(diagonal, extra, pattern, fr_now, fg_now, fb_now,
-                       blacklevel, str(gamma), k0, phi, alpha))
+                format(diagonal, extra, isp_pipeline.pattern, fr_now, fg_now,
+                       fb_now, isp_pipeline.blacklevel,
+                       isp_pipeline.gamma.value, isp_pipeline.gamma.k0,
+                       isp_pipeline.gamma.phi, isp_pipeline.gamma.alpha))
 
         if cfg.is_save_img.concat:
             img_join = np.concatenate(
                 [
-                    np.expand_dims(img_raw / whitelevel, axis=2).repeat(
-                        3, axis=2),
+                    np.expand_dims(img_raw / isp_pipeline.whitelevel,
+                                   axis=2).repeat(3, axis=2),
                     np.expand_dims(img_mosaic, axis=2).repeat(3, axis=2),
-                    # np.expand_dims(img_lsc, axis=2).repeat(3, axis=2),
+                    np.expand_dims(img_lsc, axis=2).repeat(3, axis=2),
                     np.expand_dims(img_wb, axis=2).repeat(3, axis=2),
                     img_demosaic,
                     img_IL,
@@ -212,8 +209,8 @@ def run_pipeline(cfg):
 
             # TODO
             save_img(
-                img_join, filename_prefix +
-                'img_pipeline_gamma_{}.png'.format(str(gamma)))
+                img_join, filename_prefix + 'img_pipeline_gamma_{}.png'.format(
+                    str(isp_pipeline.gamma.value)))
 
 
 def parse_args():
