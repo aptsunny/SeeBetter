@@ -98,7 +98,6 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -109,13 +108,13 @@ html_theme_options = {
             '版本',
             'children': [
                 {
-                    'name': 'MMagic 1.x',
+                    'name': 'SeeBetter 2.x',
                     'url': 'https://seebetter.readthedocs.io/zh_CN/latest/',
                     'description': 'Main 分支文档'
                 },
                 {
-                    'name': 'MMEditing 0.x',
-                    'url': 'https://seebetter.readthedocs.io/zh_CN/0.x/',
+                    'name': 'MMagic 0.x',
+                    'url': 'https://mmagic.readthedocs.io/zh_CN/latest/',
                     'description': '0.x 分支文档'
                 },
             ],
