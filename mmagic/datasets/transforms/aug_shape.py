@@ -5,10 +5,184 @@ from typing import Dict, List, Union
 
 import mmcv
 import numpy as np
+import torch
 from mmcv.transforms import BaseTransform
 from mmengine.utils import is_tuple_of
 
 from mmagic.registry import TRANSFORMS
+from .gcp_unprocess import (add_noise, apply_ccm, gamma_expansion,
+                            inverse_smoothstep, mosaic, random_ccm,
+                            random_gains, random_noise_levels_kpn,
+                            safe_invert_gains)
+
+
+@TRANSFORMS.register_module()
+class Img2LQ_Raws(BaseTransform):
+    """Img2LQ_Raws.
+
+    CFG:
+
+    dict(type='Img2LQ_Raws', key='img', global_align=False, sensor_noise=False)
+
+    dict(type='Img2LQ_Raws', key='img', global_align=True, sensor_noise=True)
+    """
+
+    def __init__(self, key, global_align=False, sensor_noise=False):
+        self.key = key
+        self.global_align = global_align
+        self.sensor_noise = sensor_noise
+
+    def BGR2RGB(self, img_bgr):
+        return img_bgr[..., ::-1]
+
+    def unprocess_meta_gt(self, image, rgb_gains, red_gains, blue_gains,
+                          rgb2cam, cam2rgb):
+        """Unprocesses an image from sRGB to realistic raw data."""
+
+        # Approximately inverts global tone mapping.
+        image = inverse_smoothstep(image)
+        # Inverts gamma compression.
+        image = gamma_expansion(image)
+        # Inverts color correction.
+        image = apply_ccm(image, rgb2cam)
+        # Approximately inverts white balance and brightening.
+        image = safe_invert_gains(image, rgb_gains, red_gains, blue_gains)
+        # Clips saturated pixels.
+        image = torch.clamp(image, min=0.0, max=1.0)
+        # Applies a Bayer mosaic.
+        # image = mosaic(image)
+
+        metadata = {
+            'cam2rgb': cam2rgb,
+            'rgb2cam': rgb2cam,
+            'rgb_gain': rgb_gains,
+            'red_gain': red_gains,
+            'blue_gain': blue_gains,
+        }
+        return image, metadata
+
+    def transform(self, results):
+        metadata = results['metadata']
+        if not self.sensor_noise:
+            shot_noise, read_noise = random_noise_levels_kpn()
+
+        raws = []
+        for i in range(len(results[self.key])):
+            raw = self.BGR2RGB(results[self.key][i])
+            raw = torch.from_numpy(np.ascontiguousarray(raw))
+            raw = raw.permute(2, 0, 1)
+            raw, _ = self.unprocess_meta_gt(raw, metadata['rgb_gain'],
+                                            metadata['red_gain'],
+                                            metadata['blue_gain'],
+                                            metadata['rgb2cam'],
+                                            metadata['cam2rgb'])
+            raws.append(raw)
+
+        raws = [mosaic(v) for v in raws]
+        raws = [add_noise(v, shot_noise, read_noise, 1) for v in raws]
+
+        raws = [v.clamp(-64 / 1023., 1.0) for v in raws]
+        noise_map = [shot_noise * v + read_noise for v in raws]
+        img_LQs = torch.stack(raws, axis=0)
+        img_NMaps = torch.stack(noise_map, axis=0)
+
+        results[self.key] = img_LQs
+        results['noise_map'] = img_NMaps
+
+        return results
+
+
+@TRANSFORMS.register_module()
+class Img2GT_Raws(BaseTransform):
+    """Img2GT_Raws.
+
+    CFG:
+
+    dict(
+        type='Img2GT_Raws',
+        key='gt',
+        rgb_gain_ratio=1.0,
+        red_gain_range=[1.9, 2.4],
+        blue_gain_range=[1.5, 1.9])
+
+    dict(
+        type='Img2GT_Raws',
+        key='gt',
+        rgb_gain_ratio=1.0,
+        red_gain_range=[1.5, 3],
+        blue_gain_range=[1.5, 3.5])
+    """
+
+    def __init__(self,
+                 key,
+                 rgb_gain_ratio=1.0,
+                 red_gain_range=[1.5, 3],
+                 blue_gain_range=[1.5, 3.5]):
+        self.key = key
+        self.rgb_gain_ratio = rgb_gain_ratio
+        self.red_gain_range = red_gain_range
+        self.blue_gain_range = blue_gain_range
+
+    def BGR2RGB(self, img_bgr):
+        return img_bgr[..., ::-1]
+
+    def unprocess_gt(self, image):
+        """Unprocesses an image from sRGB to realistic raw data."""
+
+        # Randomly creates image metadata.
+        rgb2cam = random_ccm()
+        cam2rgb = torch.inverse(rgb2cam)
+        rgb_gain, red_gain, blue_gain = random_gains(self.rgb_gain_ratio,
+                                                     self.red_gain_range,
+                                                     self.blue_gain_range)
+
+        # Approximately inverts global tone mapping.
+        image = inverse_smoothstep(image)
+        # Inverts gamma compression.
+        image = gamma_expansion(image)
+        # Inverts color correction.
+        image = apply_ccm(image, rgb2cam)
+        # Approximately inverts white balance and brightening.
+        image = safe_invert_gains(image, rgb_gain, red_gain, blue_gain)
+        # Clips saturated pixels.
+        image = torch.clamp(image, min=0.0, max=1.0)
+        # Applies a Bayer mosaic.
+        # image = mosaic(image)
+
+        metadata = {
+            'cam2rgb': cam2rgb,
+            'rgb2cam': rgb2cam,
+            'rgb_gain': rgb_gain,
+            'red_gain': red_gain,
+            'blue_gain': blue_gain,
+        }
+        return image, metadata
+
+    def transform(self, results):
+        """transform function.
+
+        Args:
+            results (dict): A dict containing the necessary information and
+                data for augmentation.
+
+        Returns:
+            dict: A dict containing the processed data and information.
+        """
+
+        raws = []
+        for i in range(len(results[self.key])):
+            raw = self.BGR2RGB(results[self.key][i])
+            raw = torch.from_numpy(np.ascontiguousarray(raw))
+            raw = raw.permute(2, 0, 1)
+            raw, metadata = self.unprocess_gt(raw)
+            raws.append(raw)
+
+        raws = torch.stack(raws, axis=0)
+
+        results[self.key] = raws
+        results['metadata'] = metadata
+
+        return results
 
 
 @TRANSFORMS.register_module()
