@@ -140,30 +140,30 @@ workflows:
                 - main
       - build_cpu:
           name: minimum_version_cpu
-          torch: 1.8.1
-          torchvision: 0.9.1
-          python: 3.7.4
+          torch: 1.10.0
+          torchvision: 0.11.0
+          python: 3.8.15
           requires:
             - lint
       - build_cpu:
           name: maximum_version_cpu
           torch: 1.13.0
           torchvision: 0.14.0
-          python: 3.9.0
+          python: 3.8.15
           requires:
             - minimum_version_cpu
-      - hold:
-          type: approval
-          requires:
-            - maximum_version_cpu
-      - build_cuda:
-          name: mainstream_version_gpu
-          torch: 1.8.1
-          # Use double quotation mark to explicitly specify its type
-          # as string instead of number
-          cuda: "10.2"
-          requires:
-            - hold
+      # - hold:
+      #     type: approval
+      #     requires:
+      #       - maximum_version_cpu
+      # - build_cuda:
+      #     name: mainstream_version_gpu
+      #     torch: 1.8.1
+      #     # Use double quotation mark to explicitly specify its type
+      #     # as string instead of number
+      #     cuda: "10.2"
+      #     requires:
+      #       - hold
   merge_stage_test:
     when:
       not:

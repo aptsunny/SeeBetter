@@ -13,13 +13,14 @@ from .multi_source_dataset import MultiSourceDataset
 from .multi_source_sampler import MultiSourceSampler
 from .paired_image_dataset import PairedImageDataset
 from .singan_dataset import SinGANDataset
+from .textual_inversion_dataset import TextualInversionDataset
 from .unpaired_image_dataset import UnpairedImageDataset
 
 __all__ = [
     'AdobeComp1kDataset', 'BasicImageDataset', 'BasicFramesDataset',
     'BasicConditionalDataset', 'UnpairedImageDataset', 'PairedImageDataset',
     'ImageNet', 'CIFAR10', 'GrowScaleImgDataset', 'SinGANDataset',
-    'MSCoCoDataset', 'ControlNetDataset', 'DreamBoothDataset',
-    'ControlNetDataset', 'SDFinetuneDataset', 'MultiSourceDataset',
-    'MultiSourceSampler'
+    'MSCoCoDataset', 'ControlNetDataset', 'DreamBoothDataset', 'ViCoDataset',
+    'ControlNetDataset', 'SDFinetuneDataset', 'TextualInversionDataset',
+    'MultiSourceDataset', 'MultiSourceSampler'
 ]

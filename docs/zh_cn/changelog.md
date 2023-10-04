@@ -1,5 +1,187 @@
 # 变更日志
 
+## v1.1.0 (22/09/2023)
+
+**亮点**
+
+在这次的发版中，我们新支持了下面五个新的算法.
+
+- 支持了 ViCo, 一种新的 SD personalization 算法. [点击查看](https://github.com/open-mmlab/mmagic/blob/main/configs/vico/README.md)
+
+<table align="center">
+<thead>
+  <tr>
+    <td>
+<div align="center">
+  <img src="https://github.com/open-mmlab/mmagic/assets/71176040/58a6953c-053a-40ea-8826-eee428c992b5" width="800"/>
+  <br/>
+</thead>
+</table>
+
+- 支持了 AnimateDiff, 一个很火的 text2animation 算法. [点击查看](https://github.com/open-mmlab/mmagic/blob/main/configs/animatediff/README.md)
+
+![512](https://github.com/ElliotQi/mmagic/assets/46469021/54d92aca-dfa9-4eeb-ba38-3f6c981e5399)
+
+- 支持了 SDXL. [点击查看](https://github.com/open-mmlab/mmagic/blob/main/configs/stable_diffusion_xl/README.md)
+
+<div align=center>
+<img src="https://github.com/okotaku/diffengine/assets/24734142/27d4ebad-5705-4500-826f-41f425a08c0d"/>
+</div>
+
+- 支持了 DragGAN. [点击查看](https://github.com/open-mmlab/mmagic/blob/main/configs/draggan/README.md)
+
+<div align=center>
+<img src="https://github.com/open-mmlab/mmagic/assets/55343765/7c397bd0-fa07-48fe-8a7c-a4022907404b"/>
+</div>
+
+- 支持了 FastComposer. [点击查看](https://github.com/open-mmlab/mmagic/blob/main/configs/fastcomposer/README.md)
+
+<div align=center>
+<img src="https://user-images.githubusercontent.com/14927720/265914135-8a25789c-8d30-40cb-8ac5-e3bd3b617aac.png">
+</div>
+
+**新功能和改进**
+
+- \[功能\] 支持使用diffusers pipeline进行推断，首先使用sd_xl。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2023
+- \[增强\] 为sd推理器添加负面提示。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2021
+- \[增强\] 更新setup.cfg中的flake8检查配置。由@LeoXing1996完成，在https://github.com/open-mmlab/mmagic/pull/2007
+- \[增强\] 将'config_name'作为'model_setting'的补充添加。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2027
+- \[增强\] 更快的测试。由@okotaku完成，在https://github.com/open-mmlab/mmagic/pull/2034
+- \[增强\] 添加OpenXLab徽章。由@ZhaoQiiii完成，在https://github.com/open-mmlab/mmagic/pull/2037
+
+**CodeCamp贡献**
+
+- \[CodeCamp2023-643\] 添加BigGAN的新配置。由@limafang完成，在https://github.com/open-mmlab/mmagic/pull/2003
+- \[CodeCamp2023-648\] MMagic的新配置GuidedDiffusion。由@ooooo-create完成，在https://github.com/open-mmlab/mmagic/pull/2005
+- \[CodeCamp2023-649\] MMagic的新配置Instance Colorization。由@ooooo-create完成，在https://github.com/open-mmlab/mmagic/pull/2010
+- \[CodeCamp2023-652\] MMagic的新配置StyleGAN3。由@hhy150完成，在https://github.com/open-mmlab/mmagic/pull/2018
+- \[CodeCamp2023-653\] 添加Real BasicVSR的新配置。由@RangeKing完成，在https://github.com/open-mmlab/mmagic/pull/2030
+
+**Bug 修复**
+
+- \[修复\] 修复主页上的最佳实践和返回目录，将新模型添加到模型库中。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2001
+- \[修复\] 检查CI错误并移除主流GPU测试。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2013
+- \[修复\] 检查Circle CI内存。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2016
+- \[修复\] 移除代码并修复剪辑损失的单元测试。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2017
+- \[修复\] 在diffusers pipeline推理器单元测试中模拟推理。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2026
+- \[修复\] 由于合并draggan而修复的错误。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2029
+- \[修复\] 更新QR码。由@crazysteeaam完成，在https://github.com/open-mmlab/mmagic/pull/2009
+- \[修复\] 用OpenXLab版本替换README中的下载链接。由@FerryHuang完成，在https://github.com/open-mmlab/mmagic/pull/2038
+- \[修复\] 增加文档字符串覆盖率。由@liuwenran完成，在https://github.com/open-mmlab/mmagic/pull/2039
+
+**新贡献者**
+
+- @limafang 首次贡献于 https://github.com/open-mmlab/mmagic/pull/2003
+- @ooooo-create 首次贡献于 https://github.com/open-mmlab/mmagic/pull/2005
+- @hhy150 首次贡献于 https://github.com/open-mmlab/mmagic/pull/2018
+- @ZhaoQiiii 首次贡献于 https://github.com/open-mmlab/mmagic/pull/2037
+- @ElliotQi 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1980
+- @Beaconsyh08 首次贡献于 https://github.com/open-mmlab/mmagic/pull/2012
+
+**完整更新日志**: https://github.com/open-mmlab/mmagic/compare/v1.0.2...v1.0.3
+
+## v1.0.2 (24/08/2023)
+
+**亮点**
+
+**1. 更详尽的文档**
+
+感谢社区的贡献者们帮助我们改进文档。我们已经改进了许多文档，包括中文和英文版本。更多详细信息请参考[文档](https://mmagic.readthedocs.io/zh_CN/latest/)。
+
+**2. 新的算法**
+
+- 支持了 Prompt-to-prompt, DDIM Inversion 和 Null-text Inversion. [点击查看.](https://github.com/open-mmlab/mmagic/blob/main/projects/prompt_to_prompt/README.md)
+
+从左到右: origin image, DDIM inversion, Null-text inversion
+
+<center class="half">
+    <img src="https://github.com/FerryHuang/mmagic/assets/71176040/34d8a467-5378-41fb-83c6-b23c9dee8f0a" width="200"/><img src="https://github.com/FerryHuang/mmagic/assets/71176040/3d3814b4-7fb5-4232-a56f-fd7fef0ba28e" width="200"/><img src="https://github.com/FerryHuang/mmagic/assets/71176040/43008ed4-a5a3-4f81-ba9f-95d9e79e6a08" width="200"/>
+</center>
+
+Prompt-to-prompt 编辑
+
+<div align="center">
+  <b>cat -> dog</b>
+  <br/>
+  <img src="https://github.com/FerryHuang/mmagic/assets/71176040/f5d3fc0c-aa7b-4525-9364-365b254d51ca" width="500"/>
+</div>
+
+<div align="center">
+  <b>spider man -> iron man(attention replace)</b>
+  <br/>
+  <img src="https://github.com/FerryHuang/mmagic/assets/71176040/074adbc6-bd48-4c82-99aa-f322cf937f5a" width="500"/>
+</div>
+
+<div align="center">
+  <b>Effel tower -> Effel tower at night (attention refine)</b>
+  <br/>
+  <img src="https://github.com/FerryHuang/mmagic/assets/71176040/f815dab3-b20c-4936-90e3-a060d3717e22" width="500"/>
+</div>
+
+<div align="center">
+  <b>blossom sakura tree -> blossom(-3) sakura tree (attention reweight)</b>
+  <br/>
+  <img src="https://github.com/FerryHuang/mmagic/assets/71176040/5ef770b9-4f28-4ae7-84b0-6c15ea7450e9" width="500"/>
+</div>
+
+- 支持了 Textual Inversion. [点击查看.](https://github.com/open-mmlab/mmagic/blob/main/configs/textual_inversion/README.md)
+
+<div align=center>
+<img src="https://github.com/open-mmlab/mmagic/assets/28132635/b2dac6f1-5151-4199-bcc2-71b5b1523a16">
+</div>
+
+- 支持了 Attention Injection 以便使用 controlnet 生成更稳定的视频. [点击查看.](https://github.com/open-mmlab/mmagic/blob/main/configs/controlnet_animation/README.md)
+- 支持了 Stable Diffusion Inpainting. [点击查看.](https://github.com/open-mmlab/mmagic/blob/main/configs/stable_diffusion/README.md)
+
+**新功能和改进**
+
+- \[增强\] 支持在稳定扩散训练中的噪声偏移，由 @LeoXing1996 提交于 https://github.com/open-mmlab/mmagic/pull/1880 ↗
+- \[社区\] 支持 Glide Upsampler，由 @Taited 提交于 https://github.com/open-mmlab/mmagic/pull/1663 ↗
+- \[增强\] 支持 controlnet 推理器，由 @Z-Fran 提交于 https://github.com/open-mmlab/mmagic/pull/1891 ↗
+- \[功能\] 支持 Albumentations 增强变换和流水线，由 @Z-Fran 提交于 https://github.com/open-mmlab/mmagic/pull/1894 ↗
+- \[功能\] 为 unet 添加注意力注入，由 @liuwenran 提交于 https://github.com/open-mmlab/mmagic/pull/1895 ↗
+- \[增强\] 更新基准测试脚本，由 @Z-Fran 提交于 https://github.com/open-mmlab/mmagic/pull/1907 ↗
+- \[增强\] 更新 mmagic 文档，由 @crazysteeaam 提交于 https://github.com/open-mmlab/mmagic/pull/1920 ↗
+- \[增强\] 支持 Prompt-to-prompt、ddim inversion 和 null-text inversion，由 @FerryHuang 提交于 https://github.com/open-mmlab/mmagic/pull/1908 ↗
+- \[CodeCamp2023-302\] 支持 MMagic 可视化并编写用户指南，由 @aptsunny 提交于 https://github.com/open-mmlab/mmagic/pull/1939 ↗
+- \[功能\] 支持textual inversion，由 @LeoXing1996 提交于 https://github.com/open-mmlab/mmagic/pull/1822 ↗
+- \[增强\] 对一些模型采用 BaseModule，由 @LeoXing1996 提交于 https://github.com/open-mmlab/mmagic/pull/1543 ↗
+- \[MMSIG\] 支持 DeblurGANv2 推理，由 @xiaomile 提交于 https://github.com/open-mmlab/mmagic/pull/1955 ↗
+- \[CodeCamp2023-647\] 添加 EG3D 的新配置，由 @RangeKing 提交于 https://github.com/open-mmlab/mmagic/pull/1985 ↗
+
+**Bug 修复**
+
+- 修复了 StableDiffusion 和 DreamBooth 训练中的 dtype 错误。 by @LeoXing1996 in https://github.com/open-mmlab/mmagic/pull/1879
+- 修复了 gui VideoSlider 的 bug。 by @Z-Fran in https://github.com/open-mmlab/mmagic/pull/1885
+- 修复了 init_model 和 glide demo 的问题。 by @Z-Fran in https://github.com/open-mmlab/mmagic/pull/1888
+- 修复了当 dim=3 时的 InstColorization bug。 by @Z-Fran in https://github.com/open-mmlab/mmagic/pull/1901
+- 修复了 sd 和 controlnet 的 fp16 bug。 by @Z-Fran in https://github.com/open-mmlab/mmagic/pull/1914
+- 修复了 controlnet 中的 num_images_per_prompt。 by @LeoXing1996 in https://github.com/open-mmlab/mmagic/pull/1936
+- 修正了 sd-inpainting 的 metafile 以修复推理器的初始化。 by @LeoXing1996 in https://github.com/open-mmlab/mmagic/pull/1995
+
+**新贡献者**
+
+- @wyyang23 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1886
+- @yehuixie 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1912
+- @crazysteeaam 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1920
+- @BUPT-NingXinyu 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1921
+- @zhjunqin 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1918
+- @xuesheng1031 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1923
+- @wslgqq277g 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1934
+- @LYMDLUT 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1933
+- @RangeKing 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1930
+- @xin-li-67 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1932
+- @chg0901 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1931
+- @aptsunny 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1939
+- @YanxingLiu 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1943
+- @tackhwa 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1937
+- @Geo-Chou 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1940
+- @qsun1 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1956
+- @ththth888 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1961
+- @sijiua 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1967
+- @MING-ZCH 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1982
+- @AllYoung 首次贡献于 https://github.com/open-mmlab/mmagic/pull/1996
+
 ## v1.0.1 (26/05/2023)
 
 **新功能和改进**

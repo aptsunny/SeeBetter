@@ -29,6 +29,7 @@
 [![license](https://img.shields.io/github/license/open-mmlab/mmagic.svg)](https://github.com/open-mmlab/mmagic/blob/main/LICENSE)
 [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmagic.svg)](https://github.com/open-mmlab/mmagic/issues)
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmagic.svg)](https://github.com/open-mmlab/mmagic/issues)
+[![Open in OpenXLab](https://cdn-static.openxlab.org.cn/app-center/openxlab_demo.svg)](https://openxlab.org.cn/apps?search=mmagic)
 
 [📘Documentation](https://mmagic.readthedocs.io/en/latest/) |
 [🛠️Installation](https://mmagic.readthedocs.io/en/latest/get_started/install.html) |
@@ -57,13 +58,13 @@ English | [简体中文](README_zh-CN.md)
 
 ## 🚀 What's New <a><img width="35" height="20" src="https://user-images.githubusercontent.com/12782558/212848161-5e783dd6-11e8-4fe0-bbba-39ffb77730be.png"></a>
 
-### New release [**MMagic v1.0.1**](https://github.com/open-mmlab/mmagic/releases/tag/v1.0.1) \[26/05/2023\]:
+### New release [**MMagic v1.1.0**](https://github.com/open-mmlab/mmagic/releases/tag/v1.1.0) \[22/09/2023\]:
 
-- Support tomesd for StableDiffusion speed-up.
-- Support all inpainting/matting/image restoration models inferencer.
-- Support animated drawings.
-- Support Style-Based Global Appearance Flow for Virtual Try-On.
-- Fix inferencer in pip-install.
+- Support ViCo, a new SD personalization method. [Click to View](https://github.com/open-mmlab/mmagic/blob/main/configs/vico/README.md)
+- Support AnimateDiff, a popular text2animation method. [Click to View](https://github.com/open-mmlab/mmagic/blob/main/configs/animatediff/README.md)
+- Support SDXL（Stable Diffusion XL）. [Click to View](https://github.com/open-mmlab/mmagic/blob/main/configs/stable_diffusion_xl/README.md)
+- Support DragGAN implementation with MMagic. [Click to View](https://github.com/open-mmlab/mmagic/blob/main/configs/draggan/README.md)
+- Support FastComposer, a new multi-subject text-to-image generation method. [Click to View](https://github.com/open-mmlab/mmagic/blob/main/configs/fastcomposer/README.md)
 
 We are excited to announce the release of MMagic v1.0.0 that inherits from [MMEditing](https://github.com/open-mmlab/mmediting) and [MMGeneration](https://github.com/open-mmlab/mmgeneration).
 
@@ -118,6 +119,8 @@ Please refer to [changelog.md](docs/en/changelog.md) for details and release his
 
 Please refer to [migration documents](docs/en/migration/overview.md) to migrate from [old version](https://github.com/open-mmlab/mmagic/tree/0.x) MMEditing 0.x to new version MMagic 1.x .
 
+<div id="table" align="center"></div>
+
 ## 📄 Table of Contents
 
 - [📖 Introduction](#-introduction)
@@ -129,8 +132,6 @@ Please refer to [migration documents](docs/en/migration/overview.md) to migrate 
 - [🎫 License](#-license)
 - [🏗️ ️OpenMMLab Family](#️-️openmmlab-family)
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
-
 ## 📖 Introduction
 
 MMagic (**M**ultimodal **A**dvanced, **G**enerative, and **I**ntelligent **C**reation) is an advanced and comprehensive AIGC toolkit that inherits from [MMEditing](https://github.com/open-mmlab/mmediting) and [MMGeneration](https://github.com/open-mmlab/mmgeneration). It is an open-source image and video editing&generating toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
@@ -139,7 +140,7 @@ Currently, MMagic support multiple image and video generation/editing tasks.
 
 https://user-images.githubusercontent.com/49083766/233564593-7d3d48ed-e843-4432-b610-35e3d257765c.mp4
 
-The best practice on our main branch works with **Python 3.8+** and **PyTorch 1.9+**.
+The best practice on our main branch works with **Python 3.8+** and **PyTorch 1.10+**.
 
 ### ✨ Major features
 
@@ -155,21 +156,23 @@ The best practice on our main branch works with **Python 3.8+** and **PyTorch 1.
 
   By using MMEngine and MMCV of OpenMMLab 2.0 framework, MMagic decompose the editing framework into different modules and one can easily construct a customized editor framework by combining different modules. We can define the training process just like playing with Legos and provide rich components and strategies. In MMagic, you can complete controls on the training process with different levels of APIs. With the support of [MMSeparateDistributedDataParallel](https://github.com/open-mmlab/mmengine/blob/main/mmengine/model/wrappers/seperate_distributed.py), distributed training for dynamic architectures can be easily implemented.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🙌 Contributing
 
 More and more community contributors are joining us to make our repo better. Some recent projects are contributed by the community including:
 
-- [GLIDE](projects/glide/configs/README.md) is contributed by @Taited.
-- [Restormer](configs/restormer/README.md) is contributed by @AlexZou14.
-- [SwinIR](configs/swinir/README.md) is contributed by @Zdafeng.
+- [SDXL](configs/stable_diffusion_xl/README.md) is contributed by  @okotaku.
+- [AnimateDiff](configs/animatediff/README.md) is contributed by @ElliotQi.
+- [ViCo](configs/vico/README.md) is contributed by @FerryHuang.
+- [DragGan](configs/draggan/README.md) is contributed by @qsun1.
+- [FastComposer](configs/fastcomposer/README.md) is contributed by @xiaomile.
 
 [Projects](projects/README.md) is opened to make it easier for everyone to add projects to MMagic.
 
 We appreciate all contributions to improve MMagic. Please refer to [CONTRIBUTING.md](https://github.com/open-mmlab/mmcv/blob/main/CONTRIBUTING.md) in MMCV and [CONTRIBUTING.md](https://github.com/open-mmlab/mmengine/blob/main/CONTRIBUTING.md) in MMEngine for more details about the contributing guideline.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🛠️ Installation
 
@@ -224,7 +227,7 @@ pip3 install -e .
 
 Please refer to [installation](docs/en/get_started/install.md) for more detailed instruction.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 📊 Model Zoo
 
@@ -266,6 +269,7 @@ Please refer to [installation](docs/en/get_started/install.md) for more detailed
           <li><a href="configs/styleganv1/README.md">StyleGANV1 (CVPR'2019)</a></li>
           <li><a href="configs/styleganv2/README.md">StyleGANV2 (CVPR'2019)</a></li>
           <li><a href="configs/styleganv3/README.md">StyleGANV3 (NeurIPS'2021)</a></li>
+          <li><a href="configs/draggan/README.md">DragGan (2023)</a></li>
         </ul>
       </td>
       <td>
@@ -351,7 +355,7 @@ Please refer to [installation](docs/en/get_started/install.md) for more detailed
         <b>Matting</b>
       </td>
       <td>
-        <b>Text-to-Image</b>
+        <b>Text-to-Image(Video)</b>
       </td>
       <td>
         <b>3D-aware Generation</b>
@@ -365,6 +369,7 @@ Please refer to [installation](docs/en/get_started/install.md) for more detailed
           <li><a href="configs/partial_conv/README.md">PConv (ECCV'2018)</a></li>
           <li><a href="configs/deepfillv2/README.md">DeepFillv2 (CVPR'2019)</a></li>
           <li><a href="configs/aot_gan/README.md">AOT-GAN (TVCG'2019)</a></li>
+          <li><a href="configs/stable_diffusion/README.md">Stable Diffusion Inpainting (CVPR'2022)</a></li>
         </ul>
       </td>
       <td>
@@ -381,8 +386,15 @@ Please refer to [installation](docs/en/get_started/install.md) for more detailed
           <li><a href="configs/disco_diffusion/README.md">Disco-Diffusion (2022)</a></li>
           <li><a href="configs/stable_diffusion/README.md">Stable-Diffusion (2022)</a></li>
           <li><a href="configs/dreambooth/README.md">DreamBooth (2022)</a></li>
+          <li><a href="configs/textual_inversion/README.md">Textual Inversion (2022)</a></li>
+          <li><a href="projects/prompt_to_prompt/README.md">Prompt-to-Prompt (2022)</a></li>
+          <li><a href="projects/prompt_to_prompt/README.md">Null-text Inversion (2022)</a></li>
           <li><a href="configs/controlnet/README.md">ControlNet (2023)</a></li>
           <li><a href="configs/controlnet_animation/README.md">ControlNet Animation (2023)</a></li>
+          <li><a href="configs/stable_diffusion_xl/README.md">Stable Diffusion XL (2023)</a></li>
+          <li><a href="configs/animatediff/README.md">AnimateDiff (2023)</a></li>
+          <li><a href="configs/vico/README.md">ViCo (2023)</a></li>
+          <li><a href="configs/fastcomposer/README.md">FastComposer (2023)</a></li>
         </ul>
       </td>
       <td>
@@ -398,7 +410,7 @@ Please refer to [installation](docs/en/get_started/install.md) for more detailed
 
 Please refer to [model_zoo](https://mmagic.readthedocs.io/en/latest/model_zoo/overview.html) for more details.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🤝 Acknowledgement
 
@@ -410,7 +422,7 @@ We appreciate all the contributors who implement their methods or add new featur
   <img src="https://contrib.rocks/image?repo=open-mmlab/mmagic" />
 </a>
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🖊️ Citation
 
@@ -434,14 +446,14 @@ If MMagic is helpful to your research, please cite it as below.
 }
 ```
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🎫 License
 
 This project is released under the [Apache 2.0 license](LICENSE).
 Please refer to [LICENSES](LICENSE) for the careful check, if you are using our code for commercial matters.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>
 
 ## 🏗️ ️OpenMMLab Family
 
@@ -465,4 +477,4 @@ Please refer to [LICENSES](LICENSE) for the careful check, if you are using our 
 - [MMagic](https://github.com/open-mmlab/mmagic): OpenMMLab Multimodal Advanced, Generative, and Intelligent Creation Toolbox.
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
 
-<p align="right"><a href="#top">🔝Back to top</a></p>
+<p align="right"><a href="#table">🔝Back to Table of Contents</a></p>

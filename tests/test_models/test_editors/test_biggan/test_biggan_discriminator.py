@@ -30,14 +30,23 @@ class TestBigGANDiscriminator(object):
 
         # test different init types
         cfg = deepcopy(self.default_config)
-        cfg.update(dict(init_type='N02'))
+        cfg.update(dict(init_cfg=dict(type='N02')))
         d = MODELS.build(cfg)
+        d.init_weights()
         y = d(self.x, self.label)
         assert y.shape == (2, 1)
 
         cfg = deepcopy(self.default_config)
-        cfg.update(dict(init_type='xavier'))
+        cfg.update(dict(init_cfg=dict(type='xavier')))
         d = MODELS.build(cfg)
+        d.init_weights()
+        y = d(self.x, self.label)
+        assert y.shape == (2, 1)
+
+        cfg = deepcopy(self.default_config)
+        cfg.update(dict(init_cfg=dict(type='ortho')))
+        g = MODELS.build(cfg)
+        g.init_weights()
         y = d(self.x, self.label)
         assert y.shape == (2, 1)
 
@@ -71,15 +80,24 @@ class TestBigGANDiscriminator(object):
 
         # test different init types
         cfg = deepcopy(self.default_config)
-        cfg.update(dict(init_type='N02'))
+        cfg.update(dict(init_cfg=dict(type='N02')))
         d = MODELS.build(cfg).cuda()
+        d.init_weights()
         y = d(self.x.cuda(), self.label.cuda())
         assert y.shape == (2, 1)
 
         cfg = deepcopy(self.default_config)
-        cfg.update(dict(init_type='xavier'))
+        cfg.update(dict(init_cfg=dict(type='xavier')))
         d = MODELS.build(cfg).cuda()
+        d.init_weights()
         y = d(self.x.cuda(), self.label.cuda())
+        assert y.shape == (2, 1)
+
+        cfg = deepcopy(self.default_config)
+        cfg.update(dict(init_cfg=dict(type='ortho')))
+        g = MODELS.build(cfg)
+        g.init_weights()
+        y = d(self.x, self.label)
         assert y.shape == (2, 1)
 
         # test different num_classes
@@ -102,3 +120,10 @@ class TestBigGANDiscriminator(object):
         d = MODELS.build(cfg).cuda()
         y = d(self.x.cuda(), self.label.cuda())
         assert y.shape == (2, 1)
+
+
+def teardown_module():
+    import gc
+    gc.collect()
+    globals().clear()
+    locals().clear()
